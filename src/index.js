@@ -1,25 +1,26 @@
-import dotenv from "dotenv";
-
+import dotenv from "dotenv"; // dotenv is used to load environment variables from a .env file into your Node.js application.
+import app from "./app.js";
 import connectDB from "./db/index.js";
 
 dotenv.config({
   path: "./env",
 });
 
-connectDB()
+connectDB() // method
 .then(() => {
-    app.on('error', ((error) => {
-        console.log("Error",error)
-    }))
-    app.listen(process.env.PORT || 8000, () => {
-        console.log(`server is running at port : ${process.env.PORT}`);
-    });
+    const PORT = process.env.PORT || 8000;
+
+    const server = app.listen(PORT, () => {
+        console.log(`App is listening on port : ${PORT}`)
+    })
+    
+    server.on("error", (err) => {
+        console.log("Server error",err);
+    })
 })
-.catch((error) => {
-    console.log("MONGO DB connection failed", error);
-});
-
-
+.catch((err) => {
+    console.log("MONGO DB connection failed !!!: ",err);
+})
 
 
 
