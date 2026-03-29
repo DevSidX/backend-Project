@@ -16,4 +16,15 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public")); //  serves static assets such as images, CSS, and JavaScript files directly to the client
 app.use(cookieParser()) // to access and set
 
+
+
+// routes IMPORT
+
+import userRouter from './routes/user.routes.js'
+
+// routes declaration
+
+app.use("/api/v1/users", userRouter)  // redirected to userRouter 
+//EX :- https://localhost/8000/api/v1/users/register
+
 export default app;
