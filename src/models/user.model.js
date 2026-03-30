@@ -52,7 +52,7 @@ userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) {
         return next();  // if already modified
     }
-    this.password = bcrypt.hash(this.password, 10) // it modifies the password 
+    this.password = await bcrypt.hash(this.password, 10) // it modifies the password 
     next()
 })
 
@@ -61,7 +61,7 @@ userSchema.methods.isPasswordCorrect = async function (password) {
     return await bcrypt.compare(password, this.password)    // either true or false
 }
 
-// JWT Tokens
+// JWT Tokens - Mongoose instance method that generates a Short-Lived JWT (JSON Web Token).
 userSchema.methods.generateAccessToken = function () {
     return jwt.sign(
     {
@@ -74,6 +74,7 @@ userSchema.methods.generateAccessToken = function () {
     )
 }
 
+// JWT Tokens - a Long-Lived JWT (JSON Web Token) used to request new Access Tokens once the short-lived ones expire
 userSchema.methods.generateRefreshToken = function () {
     return jwt.sign({
         _id: this._id,
@@ -88,4 +89,4 @@ userSchema.methods.generateRefreshToken = function () {
     )
 }
 
-export const User = mongoose.model('User', userSchema)
+export const User = mongoose.model('User', userSchema)  // this will be used to call mongoose DB
