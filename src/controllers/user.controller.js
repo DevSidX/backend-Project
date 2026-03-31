@@ -3,9 +3,8 @@ import { ApiError } from "../utils/ApiErrors.js";
 import { uploadOnCloudinary } from "../utils/fileUpload.js";
 import { User } from "../models/user.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { response } from "express";
 
-const registerUser = (async (req , res) => {
+const registerUser = asyncHandler (async (req , res) => {
     // get user deatils from front-end        T
     // validation - not empty                 T
     // check if the user is already registered through username or email      T
@@ -17,42 +16,44 @@ const registerUser = (async (req , res) => {
     // return response       T
 
     const { fullName, username, email, password} = req.body
-    console.log(req.body);
     
-    console.log("email: ", email);
-    console.log("Username: ", username);
+    // console.log("email: ", email);
+    // console.log("Username: ", username);
 
     if ( [fullName, username, email, password].some((field) => !field || field.trim() === "") ) {
-        throw new Error(400, "All fields are required!!");
+        throw new ApiError(400, "All fields are required!!");
     }
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        throw new Error(400, "Valid email is required!!");
+        throw new ApiError(400, "Valid email is required!!");
     }
 
     // find if the username or email already exists in the database or not
-    const existedUSer = User.findOne({
+    const existedUser = await User.findOne({
         $or: [{ username },{ email }]
     })    
 
-    if(existedUSer){
-        throw new Error(409, "User with email or username already exists!");
+    if(existedUser){
+        throw new ApiError(409, "User with email or username already exists!");
     }
     // avatar is file (png,jpg,jpeg ....)
-    const avatarLocalPath = req.files?.avatar[0]?.path  // trying to safely extract the uploaded avatar file path from the request
+    const avatarLocalPath = req.files?.avatar?.[0]?.path  // trying to safely extract the uploaded avatar file path from the request
+    
+    const coverImageLocalPath = req.files?.coverImage?.[0]?.path
 
-    const coverImageLocalPath = req.files?.coverImage[0]?.path
-
+    // console.log(req.files);
+    
     if (!avatarLocalPath) {
-        throw new Error(400, "Avatar file is required!");
+        throw new ApiError(400, "Avatar file is required!");
     }
 
+    
     const avatar = await uploadOnCloudinary(avatarLocalPath)
     const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
     if (!avatar) {
-        throw new Error(400, "Avatar file is required!");
+        throw new ApiError(400, "Avatar uploaded failed!");
     }
-
+    
     // entry in the database
     const user = await User.create({
         fullName,
@@ -63,7 +64,7 @@ const registerUser = (async (req , res) => {
         username: username.toLowerCase()
     })
 
-    const userCreated = User.findById(user._id).select(   // this _id is defined by mongo
+    const userCreated = await User.findById(user._id).select(   // this _id is defined by mongo
         "-password -refreshToken"  // don't want password and refreshToken thats why used (-) minus sign
     ) 
 
@@ -71,7 +72,7 @@ const registerUser = (async (req , res) => {
         throw new ApiError(500, "Something went wrong while registering the user")
     }
 
-    return response.status(201).json(
+    return res.status(201).json(
         new ApiResponse(200, userCreated, "user registered Successfully!!")
     )
 }) 
