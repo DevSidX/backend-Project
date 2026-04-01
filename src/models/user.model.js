@@ -63,28 +63,28 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 
 // JWT Tokens - Mongoose instance method that generates a Short-Lived JWT (JSON Web Token).
 userSchema.methods.generateAccessToken = function () {
-    return jwt.sign(
+    return jwt.sign( // generates new token
     {
-        _id: this._id
+        _id: this._id //  payload 
     },
-    process.env.ACCESS_TOKEN_SECRET,
+    process.env.ACCESS_TOKEN_SECRET,   //  secret key
     {
-        expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+        expiresIn: process.env.ACCESS_TOKEN_EXPIRY   // expiry time of 1 day
     }
     )
 }
 
 // JWT Tokens - a Long-Lived JWT (JSON Web Token) used to request new Access Tokens once the short-lived ones expire
 userSchema.methods.generateRefreshToken = function () {
-    return jwt.sign({
+    return jwt.sign({      // payload - generates new refresh token
         _id: this._id,
         email: this.email,
         username: this.username,
         fullName: this.fullName
     },
-    process.env.REFRESH_TOKEN_SECRET,
+    process.env.REFRESH_TOKEN_SECRET,  // secret key
     {
-        expiresIn: process.env.REFRESH_TOKEN_EXPIRY
+        expiresIn: process.env.REFRESH_TOKEN_EXPIRY  // exoiry time of 10days
     }
     )
 }
