@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiErrors.js";
 import { uploadOnCloudinary } from "../utils/fileUpload.js";
 import { User } from "../models/user.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-
+import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
@@ -17,7 +17,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
 
         return {refreshToken, accessToken}
     } catch (error) {
-        throw new ApiError(500, "Something went wrong while gerenating refresh and access token");
+        throw new ApiError(500, "Something went wrong while genrating refresh and access token");
     }
 }
 
@@ -106,7 +106,7 @@ const loginUser = asyncHandler( async (req, res) => {
     // then access and refresh token 
     // send cookies - send access and refresh token
 
-    const { username, email, password } = req.body
+    const { username, email, password } = req.body  // this data will be taken from the user
     
     if(!(username || email)){
         throw new ApiError(400, "Username or Email doesn't exist");
@@ -177,4 +177,57 @@ const logoutUSer = asyncHandler( async (req, res) => {
     )
 })
 
-export { registerUser, loginUser, logoutUSer }
+const refreshAccessToken = asyncHandler( async (req, res) => { 
+    
+    // Access the refreshtoken from the cookies of client
+    // verify the incoming token
+    // decode the incoming refresh token and extract ths user id 
+    // check if the user of that _id is present in the database
+    // and then compare the tokens of incomingrefreshtoken and and user token if theay are same or not
+    // if they are matched then generate a refresh token
+
+    const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken // refresh token send by the user
+
+    if (!incomingRefreshToken) {
+        throw new ApiError(401, "unauthorized request");
+    }
+
+    try {
+        const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
+    
+        const user = await User.findById(decodedToken?._id)    // extract the id from the decoded token
+    
+        if (!user) {
+            throw new ApiError("Invalid refresh token");
+        }
+    
+        if(incomingRefreshToken !== user?.refreshToken){
+            throw new ApiError(401, "Refresh token is expired or used");
+        }
+    
+        const { accessToken, newRefreshToken } = await generateAccessAndRefreshTokens(user._id)
+    
+        const options = {  // cookies
+            httpOnly: true,
+            secure: true
+        }
+    
+        return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", newRefreshToken, options)
+        .json(
+            new ApiResponse(200, {
+                accessToken, 
+                refreshToken: newRefreshToken,
+            },
+            "Access token refreshed"
+        ))
+
+    } catch (error) {
+        throw new ApiError(401, error?.message || "Invalid refresh token");
+        
+    }
+})
+
+export { registerUser, loginUser, logoutUSer, refreshAccessToken }
