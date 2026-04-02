@@ -58,7 +58,7 @@ userSchema.pre("save", async function (next) {
 
 // custom methods
 userSchema.methods.isPasswordCorrect = async function (password) {
-    return await bcrypt.compare(password, this.password)    // either true or false
+    return await bcrypt.compare(password, this.password)    // this.password Refers to the hashed password stored in MongoDB
 }
 
 // JWT Tokens - Mongoose instance method that generates a Short-Lived JWT (JSON Web Token).
