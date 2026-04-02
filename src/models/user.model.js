@@ -65,7 +65,10 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 userSchema.methods.generateAccessToken = function () {
     return jwt.sign( // generates new token
     {
-        _id: this._id //  payload 
+        _id: this._id, //  payload 
+        email: this.email,
+        username: this.username,
+        fullName: this.fullName
     },
     process.env.ACCESS_TOKEN_SECRET,   //  secret key
     {
@@ -76,15 +79,12 @@ userSchema.methods.generateAccessToken = function () {
 
 // JWT Tokens - a Long-Lived JWT (JSON Web Token) used to request new Access Tokens once the short-lived ones expire
 userSchema.methods.generateRefreshToken = function () {
-    return jwt.sign({      // payload - generates new refresh token
+    return jwt.sign({      // payload 
         _id: this._id,
-        email: this.email,
-        username: this.username,
-        fullName: this.fullName
     },
     process.env.REFRESH_TOKEN_SECRET,  // secret key
     {
-        expiresIn: process.env.REFRESH_TOKEN_EXPIRY  // exoiry time of 10days
+        expiresIn: process.env.REFRESH_TOKEN_EXPIRY  // expiry time of 10days
     }
     )
 }
