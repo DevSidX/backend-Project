@@ -1,5 +1,17 @@
 import { Router } from "express";
-import { loginUser, logoutUSer, refreshAccessToken, registerUser, updateAvatar } from "../controllers/user.controller.js";
+import { 
+    changeCurrentPassword, 
+    getCurrentUser, 
+    getUserChannelProfile, 
+    getWatchHistory, 
+    loginUser, 
+    logoutUSer, 
+    refreshAccessToken, 
+    registerUser, 
+    updateAccountDetails, 
+    updateAvatar, 
+    updateCoverImage 
+} from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -36,10 +48,42 @@ router.route("/refresh-token").post(
     refreshAccessToken
 )
 
-router.route("/updateAvatar").post(
+router.route("/change-Password").post(
+    verifyJWT,
+    changeCurrentPassword
+)
+
+router.route("/current-User").post(
+    verifyJWT,
+    getCurrentUser
+)
+
+router.route("/update-AccountDetails").patch(  // PATCH method is used to apply partial modifications to a resource, allowing updates to
+//                                                specific fields without sending the entire resource body
+    verifyJWT,
+    updateAccountDetails
+)
+
+router.route("/avatar").patch(
     verifyJWT,
     upload.single("avatar"),
     updateAvatar
+)
+
+router.route("/coverImage").post(
+    verifyJWT,
+    upload.single("coverImage"),
+    updateCoverImage
+)
+
+router.route("/c/:username").get(
+    verifyJWT,
+    getUserChannelProfile
+)
+
+router.route("/watchHistory").get(
+    verifyJWT,
+    getWatchHistory
 )
 
 export default router;
