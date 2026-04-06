@@ -5,6 +5,7 @@ import { deleteFromCloudinary } from "../utils/deteleFile.js";
 import { User } from "../models/user.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
@@ -387,7 +388,175 @@ const updateCoverImage = asyncHandler( async (req, res) => {
     )
 } )
 
+const getUserChannelProfile = asyncHandler( async (req, res) => {
 
+    // extracts the username from the url
+    // then finds the specific user document matching with the username
+
+    const { username } = req.params // means from url
+
+    if (!username?.trim()) {   // trim() is used to remove the writespaces
+        throw new ApiError(400, "username is missing!");
+    }
+
+    // using aggregation pipelines
+    const channel = await User.aggregate([
+        {
+            $match: {
+                username: username?.toLowerCase()  // SELECT * FROM User WHERE username = 'siddharth' || one document 
+            }
+        },
+        //  Performs a left join with another collection (subscriptions). 
+        {
+            $lookup: {    // checked the subscribers of username through channel
+                from: "subscriptions", // joins with
+                localField: "_id",  // from users collection
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            $lookup: {   // how many channel has he (username) subscribed
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "SubscribedTo"
+            }
+        },
+        // added new fields in the orignal user object
+        {
+            $addFields: {
+                subscriberCount: {
+                    $size: "$subscribers",  // subscriber count
+                },
+                channelSubscribedToCount: {  
+                    $size: "$SubscribedTo"  // subscribe to channels count
+                },
+                isSubscribed: {
+                    $cond: {
+                        if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        { // it gives the permission about what to project or what not using 0 == fase and 1 == true
+            $project: {
+                fullName: 1,
+                username: 1,
+                subscriberCount: 1,
+                channelSubscribedToCount: 1,
+                isSubscribed: 1,
+                avatar: 1,
+                coverImage: 1,
+                email: 1
+            }
+        }
+    ])
+
+    if(!channel?.length){
+        throw new ApiError(404, "channel doesn't exist");
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            channel[0],
+            "User channel fetched successfully"
+        )
+    )
+})
+
+const getWatchHistory = asyncHandler( async (req, res) => {
+    const user = await User.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(req.user._id)  // Find the current use
+            }
+        },
+        {
+            $lookup: {  // will Get all watched videos
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
+                pipeline: [  // in the videos collection
+                    {
+                        $lookup: {  // For each video → get owner
+                            from: "users",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",   // owner field will only have fullName, userNAme, avatar
+                            pipeline: [   // sub-pipeline  - Clean owner data
+                                {
+                                    $project: {  // Removes unnecessary fields from the owner
+                                        fullName: 1,
+                                        username: 1,
+                                        avatar: 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $addFields: {
+                            owner: {
+                                $first: "$owner" // instead of returning an whole array just take the first element of an array
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ])
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            user[0].watchHistory,
+            "Watch history fetched successfully!"
+        )
+    )
+
+/*
+[
+  {
+    _id: "videoId1",
+    videoFile: "video-url",
+    thumbnail: "thumb-url",
+    title: "Video Title",
+    description: "Video desc",
+    duration: 120,
+    views: 500,
+    isPublished: true,
+    createdAt: "...",
+    
+    owner: {
+      _id: "userId",
+      fullName: "Siddharth",
+      username: "sid",
+      avatar: "avatar-url"
+    }
+  },
+  {
+    _id: "videoId2",
+    title: "Another Video",
+    
+    owner: {
+      fullName: "Rohit",
+      username: "rohit",
+      avatar: "avatar-url"
+    }
+  }
+]
+*/
+
+})
 
 export { 
     registerUser, 
@@ -398,5 +567,7 @@ export {
     getCurrentUser, 
     updateAccountDetails, 
     updateAvatar ,
-    updateCoverImage
+    updateCoverImage,
+    getUserChannelProfile,
+    getWatchHistory
 }
