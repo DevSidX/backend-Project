@@ -220,14 +220,17 @@ const updateVideo = asyncHandler(async (req, res) => {
 const deleteVideo = asyncHandler (async (req, res) => {
     const { videoId } = req.params
 
-    if(!mongoose.isValidObjectId(videoId)){
+    if(!videoId || !mongoose.isValidObjectId(videoId)){
         throw new ApiError(400, "Invalid video ID");
     }
 
-    const deleteVideo = await Video.findByIdAndDelete(videoId)
+    const deleteVideo = await Video.findOneAndDelete({
+        _id: videoId,
+        owner: req.user._id
+    })
 
     if(!deleteVideo){
-        throw new ApiError(404, "Video not found!");
+        throw new ApiError(404, "Video not found or unauthorized!");
     }
 
     return res
