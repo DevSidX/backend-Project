@@ -21,9 +21,10 @@ app.use(cookieParser()) // to access and set
 // routes IMPORT
 
 import userRouter from './routes/user.routes.js'
-
+import subscriptionRouter from './routes/subscription.routes.js'
 // routes declaration
 
 app.use("/api/v1/users", userRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/users/register
+app.use("/api/v1/subscriptions", subscriptionRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/users/register
 
 export default app;
