@@ -138,7 +138,7 @@ const publishAVideo = asyncHandler ( async (req, res) => {
     return res
     .status(200)
     .json(
-        ApiResponse(
+        new ApiResponse(
             200,
             video,
             "video published Successfully!"
@@ -247,7 +247,7 @@ const deleteVideo = asyncHandler (async (req, res) => {
 const togglePublishStatus = asyncHandler (async (req,res) => {
     const { videoId } = req.params
 
-    if(mongoose.isValidObjectId(videoId)){
+    if(!mongoose.isValidObjectId(videoId)){
         throw new ApiError(400, "Invalid video Id");
     }
 
