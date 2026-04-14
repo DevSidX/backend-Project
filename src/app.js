@@ -26,6 +26,7 @@ import VideoRouter from './routes/video.routes.js'
 import commentRouter from './routes/comments.routes.js'
 import tweetRouter from './routes/tweet.routes.js'
 import playlistRouter from './routes/playlist.routes.js'
+import likeRouter from './routes/like.routes.js'
 
 // routes declaration
 
@@ -35,5 +36,6 @@ app.use("/api/v1/video", VideoRouter)  // redirected to userRouter , EX :- https
 app.use("/api/v1/comments", commentRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/users/register
 app.use("/api/v1/tweets", tweetRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/users/register
 app.use("/api/v1/playlists", playlistRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/users/register
+app.use("/api/v1/likes", likeRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/users/register
 
 export default app;
