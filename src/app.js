@@ -27,15 +27,17 @@ import commentRouter from './routes/comments.routes.js'
 import tweetRouter from './routes/tweet.routes.js'
 import playlistRouter from './routes/playlist.routes.js'
 import likeRouter from './routes/like.routes.js'
+import dashboardRouter from './routes/dashBoard.routes.js'
 
 // routes declaration
 
 app.use("/api/v1/users", userRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/users/register
-app.use("/api/v1/subscriptions", subscriptionRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/users/register
-app.use("/api/v1/video", VideoRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/users/register
-app.use("/api/v1/comments", commentRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/users/register
-app.use("/api/v1/tweets", tweetRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/users/register
-app.use("/api/v1/playlists", playlistRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/users/register
-app.use("/api/v1/likes", likeRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/users/register
+app.use("/api/v1/subscriptions", subscriptionRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/subscriptions
+app.use("/api/v1/video", VideoRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/video
+app.use("/api/v1/comments", commentRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/comments
+app.use("/api/v1/tweets", tweetRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/tweets
+app.use("/api/v1/playlists", playlistRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/playlists
+app.use("/api/v1/likes", likeRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/likes
+app.use("/api/v1/dashboard", dashboardRouter)  // redirected to userRouter , EX :- https://localhost/8000/api/v1/dashboard
 
 export default app;
